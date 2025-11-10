@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* TAMBAHKAN INI */
+html {
+  scroll-behavior: smooth;
+}
