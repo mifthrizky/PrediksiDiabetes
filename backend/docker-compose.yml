@@ -1,0 +1,20 @@
+# Tentukan versi docker-compose
+version: '3.8'
+
+# Definisikan layanan (kontainer) kita
+services:
+  # 'backend' adalah nama layanan kita
+  backend:
+    # Build: Perintahkan Docker untuk membangun image
+    # dari Dockerfile di direktori saat ini ('.')
+    build: .
+    
+    # Beri nama kontainer agar mudah diidentifikasi
+    container_name: iris_api_service
+    
+    # Petakan port: '8000' di komputer Anda ke '8000' di dalam kontainer
+    ports:
+      - "8000:8000"
+      
+    # Selalu restart kontainer jika berhenti karena error
+    restart: always
