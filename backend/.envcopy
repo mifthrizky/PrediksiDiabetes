@@ -1,0 +1,2 @@
+MODEL_PATH="ml_training/backend/models/diabetes_model_5_fitur.joblib"
+SCALER_PATH="ml_training/backend/models/diabetes_scaler_5_fitur.joblib"
