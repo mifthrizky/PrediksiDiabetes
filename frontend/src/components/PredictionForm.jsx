@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Activity, Droplet, Heart, User, Calculator, Calendar } from "lucide-react";
 
+// Komponen utama form prediksi
 function PredictionForm() {
+  // State untuk menyimpan data form
   const [form, setForm] = useState({
     pregnancies: "",
     glucose: "",
@@ -9,30 +11,85 @@ function PredictionForm() {
     bmi: "",
     age: "",
   });
-  const [result, setResult] = useState(null);
-  const [confidence, setConfidence] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
+  // State untuk hasil prediksi
+  const [result, setResult] = useState(null); // "Diabetes" atau "Tidak Diabetes"
+  const [confidence, setConfidence] = useState(null); // Nilai persentase
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState(null); // State untuk error API
+
+  // Menangani perubahan input
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // Menangani submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError(null); // Selalu reset error di awal
+    setResult(null); // Reset hasil sebelumnya
+
+    // --- VALIDASI TAMBAHAN ---
+    // Cek apakah ada field yang masih kosong
+    const isFormIncomplete = Object.values(form).some(value => value === "");
+    if (isFormIncomplete) {
+      // PERBAIKAN: Ganti 'alert' dengan 'setApiError'
+      setApiError("Harap isi semua field sebelum melakukan prediksi.");
+      return; // Hentikan eksekusi jika form tidak lengkap
+    }
+    // --- AKHIR VALIDASI ---
+
     setIsLoading(true);
 
-    // Simulasi loading
-    setTimeout(() => {
-      // Simulasi hasil prediksi
-      const random = Math.random();
-      const prediction = random > 0.5 ? "Diabetes" : "Tidak Diabetes";
-      const conf = (random * 100).toFixed(2);
-      setResult(prediction);
-      setConfidence(conf);
+    // URL Backend FastAPI Anda (pastikan port-nya benar, default uvicorn 8000)
+    const API_URL = "http://localhost:8000/predict";
+
+    // Konversi nilai form dari string ke angka
+    const formData = {
+        pregnancies: parseInt(form.pregnancies),
+        glucose: parseFloat(form.glucose),
+        bloodPressure: parseFloat(form.bloodPressure),
+        bmi: parseFloat(form.bmi),
+        age: parseInt(form.age)
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        // Tangani jika respons server tidak OK (misal: error 500)
+        throw new Error(`Gagal menghubungi server: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        // Tangani jika API mengembalikan pesan error (misal: model tidak terload)
+        throw new Error(data.error);
+      }
+
+      // Set state dengan hasil prediksi dari backend
+      setResult(data.prediction); // "Diabetes" atau "Tidak Diabetes"
+      // Konversi confidence (misal: 0.95) menjadi persentase (95.00)
+      setConfidence((data.confidence * 100).toFixed(2));
+
+    } catch (error) {
+      // Tangani error jaringan atau error dari throw di atas
+      console.error("Terjadi kesalahan saat prediksi:", error);
+      setApiError(error.message);
+    } finally {
+      // Pastikan loading dimatikan apapun yang terjadi
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
+  // Menangani reset form
   const handleReset = () => {
     setForm({
       pregnancies: "",
@@ -43,8 +100,11 @@ function PredictionForm() {
     });
     setResult(null);
     setConfidence(null);
+    setApiError(null);
+    setIsLoading(false);
   };
 
+  // Konfigurasi untuk input fields
   const inputFields = [
     {
       name: "pregnancies",
@@ -178,6 +238,13 @@ function PredictionForm() {
                 </button>
               </div>
             </div>
+            
+            {/* Tampilkan pesan Error API jika ada */}
+            {apiError && (
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-center">
+                <strong>Gagal Prediksi:</strong> {apiError}
+              </div>
+            )}
 
             {/* Hasil Prediksi */}
             {result && (
