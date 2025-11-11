@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, Droplet, Heart, User, Calculator, Calendar } from "lucide-react";
+import { Activity, Droplet, Heart, User, Calculator, Calendar, Scale, Ruler } from "lucide-react";
 
 // Komponen utama form prediksi
 function PredictionForm() {
@@ -8,7 +8,8 @@ function PredictionForm() {
     pregnancies: "",
     glucose: "",
     bloodPressure: "",
-    bmi: "",
+    weight: "", // Diubah dari bmi
+    height: "", // Input baru
     age: "",
   });
 
@@ -41,6 +42,27 @@ function PredictionForm() {
 
     setIsLoading(true);
 
+    // --- PERHITUNGAN BMI ---
+    const weightKg = parseFloat(form.weight);
+    const heightCm = parseFloat(form.height);
+    let calculatedBmi;
+
+    if (heightCm <= 0 || weightKg <= 0) {
+        setApiError("Tinggi (cm) dan Berat Badan (kg) harus diisi dengan nilai positif.");
+        setIsLoading(false);
+        return;
+    }
+
+    const heightM = heightCm / 100;
+    calculatedBmi = weightKg / (heightM * heightM);
+
+    if (!isFinite(calculatedBmi)) {
+        setApiError("Gagal menghitung BMI. Periksa kembali input Tinggi dan Berat Badan.");
+        setIsLoading(false);
+        return;
+    }
+    // --- AKHIR PERHITUNGAN BMI ---
+
     // URL Backend FastAPI Anda (pastikan port-nya benar, default uvicorn 8000)
     const API_URL = "http://localhost:8000/predict";
 
@@ -49,7 +71,7 @@ function PredictionForm() {
         pregnancies: parseInt(form.pregnancies),
         glucose: parseFloat(form.glucose),
         bloodPressure: parseFloat(form.bloodPressure),
-        bmi: parseFloat(form.bmi),
+        bmi: parseFloat(calculatedBmi.toFixed(2)), // Menggunakan BMI yang dihitung
         age: parseInt(form.age)
     };
 
@@ -64,7 +86,8 @@ function PredictionForm() {
 
       if (!response.ok) {
         // Tangani jika respons server tidak OK (misal: error 500)
-        throw new Error(`Gagal menghubungi server: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({})); // Coba parse error
+        throw new Error(`Gagal menghubungi server: ${response.statusText} (Status: ${response.status}) - ${errorData.detail || 'No details'}`);
       }
 
       const data = await response.json();
@@ -95,7 +118,8 @@ function PredictionForm() {
       pregnancies: "",
       glucose: "",
       bloodPressure: "",
-      bmi: "",
+      weight: "", // Diubah dari bmi
+      height: "", // Input baru
       age: "",
     });
     setResult(null);
@@ -131,13 +155,22 @@ function PredictionForm() {
       tooltip: "Tekanan darah diastolik (mm Hg)",
     },
     {
-      name: "bmi",
-      label: "BMI (Body Mass Index)",
-      placeholder: "Contoh: 28.5",
+      name: "weight", // BARU: Menggantikan BMI
+      label: "Body weight (kg)",
+      placeholder: "Contoh: 70",
       type: "number",
       step: "0.1",
-      icon: Calculator,
-      tooltip: "Indeks massa tubuh (kg/m²)",
+      icon: Scale, // Icon baru (pastikan diimpor)
+      tooltip: "Berat badan Anda dalam kilogram (kg)",
+    },
+    {
+      name: "height", // BARU: Input kedua
+      label: "Body Height (cm)",
+      placeholder: "Contoh: 165",
+      type: "number",
+      step: "1",
+      icon: Ruler, // Icon baru (pastikan diimpor)
+      tooltip: "Tinggi badan Anda dalam sentimeter (cm)",
     },
     {
       name: "age",
