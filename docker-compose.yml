@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Service untuk Backend
+  backend:
+    build:
+      context: ./backend  # Path ke folder backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"      # Mapping port: [Port di komputermu]:[Port di container]
+    volumes:
+      - ./backend:/app   # Sinkronisasi kode untuk development (opsional)
+
+  # Service untuk Frontend
+  frontend:
+    build:
+      context: ./frontend # Path ke folder frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"          # Mapping port: [Port di komputermu]:[Port di container]
+    depends_on:
+      - backend          # Menunggu backend jalan dulu (opsional)
