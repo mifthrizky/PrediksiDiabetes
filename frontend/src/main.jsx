@@ -1,12 +1,14 @@
-// src/main.jsx ✅ (BENAR)
-
+// src/main.jsx (BARU)
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Dashboard from "./Dashboard.jsx"; // <-- UBAH: Import Dashboard
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Dashboard /> {/* <-- UBAH: Render Dashboard */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );

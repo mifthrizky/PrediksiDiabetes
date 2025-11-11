@@ -1,5 +1,6 @@
 import React from "react";
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, ArrowUp, Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Footer() {
   const scrollToTop = (e) => {
@@ -97,13 +98,13 @@ function Footer() {
                 </a>
               </li>
               <li>
-                <a
-                  href="#form-prediksi"
+                <Link
+                  to="/prediction" // <-- Ganti href menjadi "to"
                   className="hover:text-blue-400 transition-colors inline-flex items-center group"
                 >
                   <span className="w-0 h-0.5 bg-blue-400 group-hover:w-4 transition-all mr-0 group-hover:mr-2"></span>
                   Mulai Prediksi
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

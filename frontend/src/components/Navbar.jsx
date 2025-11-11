@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,18 +34,17 @@ function Navbar() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <a
-            href="#"
+          <Link
+            to="/"
             className={`text-2xl font-bold flex items-center gap-2 transition-colors ${
               isScrolled ? "text-blue-600" : "text-blue-600"
             }`}
-            onClick={scrollToTop}
           >
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white text-xl">🩺</span>
             </div>
             <span className="hidden sm:block">DiabetesPredict</span>
-          </a>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
@@ -75,12 +75,12 @@ function Navbar() {
               Reviews
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a
-              href="#form-prediksi"
+            <Link
+              to="/prediction"
               className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
             >
               Mulai Prediksi
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}

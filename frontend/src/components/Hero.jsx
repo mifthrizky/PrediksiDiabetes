@@ -1,5 +1,6 @@
 import React from "react";
 import { Sparkles, TrendingDown, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Hero() {
   return (
@@ -57,8 +58,8 @@ function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4 pt-4">
-              <a
-                href="#form-prediksi"
+              <Link
+                to="/prediction" // <-- 2. Ganti href menjadi "to"
                 className="group bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 inline-flex items-center gap-2"
               >
                 Mulai Prediksi Sekarang
@@ -70,7 +71,7 @@ function Hero() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-              </a>
+              </Link>
 
               <a
                 href="#about"

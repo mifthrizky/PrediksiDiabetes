@@ -1,7 +1,21 @@
+// src/App.jsx
+
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar.jsx";
+import Dashboard from "./Dashboard.jsx";
+import Footer from "./components/Footer.jsx";
+import PredictionForm from "./components/PredictionForm.jsx";
+
 function App() {
   return (
-    <div className="w-full min-h-screen bg-gray-100 flex items-center justify-center">
-      <h1 className="text-3xl font-bold text-blue-600 underline">Halo, Tailwind!</h1>
+    <div className="App">
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/prediction" element={<PredictionForm />} />
+        </Routes>
+      </main>
     </div>
   );
 }

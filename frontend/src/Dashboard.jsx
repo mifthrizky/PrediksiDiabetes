@@ -1,22 +1,15 @@
-// src/Dashboard.jsx
+// src/Dashboard.jsx (KODE PERBAIKAN)
 
-import React, { useState } from "react";
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Features from "./components/Features";
-import BlogSection from "./components/BlogSection";
-import ReviewsSection from "./components/ReviewsSection";
-import PredictionForm from "./components/PredictionForm";
-import Result from "./components/Result";
-import Footer from "./components/Footer"; // 1. Import komponen baru
+import React from "react";
+import Hero from "./components/Hero.jsx";
+import Features from "./components/Features.jsx";
+import BlogSection from "./components/BlogSection.jsx";
+import ReviewsSection from "./components/ReviewsSection.jsx";
+import Footer from "./components/Footer.jsx";
 
 function Dashboard() {
-  const [predictionResult, setPredictionResult] = useState(null);
-
   return (
-    // 'bg-white' ini hanya untuk default, footer akan menimpanya
     <div className="min-h-screen bg-white">
-      <Navbar />
       <Hero />
       <Features />
       <BlogSection />
