@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { Activity, Droplet, Heart, User, Calculator, Calendar, Scale, Ruler } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Komponen utama form prediksi
 function PredictionForm() {
+  const navigate = useNavigate();
+
   // State untuk menyimpan data form
   const [form, setForm] = useState({
     pregnancies: "",
     glucose: "",
     bloodPressure: "",
-    weight: "", // Diubah dari bmi
-    height: "", // Input baru
+    weight: "",
+    height: "",
     age: "",
   });
 
-  // State untuk hasil prediksi
-  const [result, setResult] = useState(null); // "Diabetes" atau "Tidak Diabetes"
-  const [confidence, setConfidence] = useState(null); // Nilai persentase
+  // State untuk loading dan error
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState(null); // State untuk error API
+  const [apiError, setApiError] = useState(null);
 
   // Menangani perubahan input
   const handleChange = (e) => {
@@ -27,52 +28,47 @@ function PredictionForm() {
   // Menangani submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError(null); // Selalu reset error di awal
-    setResult(null); // Reset hasil sebelumnya
+    setApiError(null);
 
-    // --- VALIDASI TAMBAHAN ---
-    // Cek apakah ada field yang masih kosong
-    const isFormIncomplete = Object.values(form).some(value => value === "");
+    // Validasi form
+    const isFormIncomplete = Object.values(form).some((value) => value === "");
     if (isFormIncomplete) {
-      // PERBAIKAN: Ganti 'alert' dengan 'setApiError'
       setApiError("Harap isi semua field sebelum melakukan prediksi.");
-      return; // Hentikan eksekusi jika form tidak lengkap
+      return;
     }
-    // --- AKHIR VALIDASI ---
 
     setIsLoading(true);
 
-    // --- PERHITUNGAN BMI ---
+    // Perhitungan BMI
     const weightKg = parseFloat(form.weight);
     const heightCm = parseFloat(form.height);
     let calculatedBmi;
 
     if (heightCm <= 0 || weightKg <= 0) {
-        setApiError("Tinggi (cm) dan Berat Badan (kg) harus diisi dengan nilai positif.");
-        setIsLoading(false);
-        return;
+      setApiError("Tinggi (cm) dan Berat Badan (kg) harus diisi dengan nilai positif.");
+      setIsLoading(false);
+      return;
     }
 
     const heightM = heightCm / 100;
     calculatedBmi = weightKg / (heightM * heightM);
 
     if (!isFinite(calculatedBmi)) {
-        setApiError("Gagal menghitung BMI. Periksa kembali input Tinggi dan Berat Badan.");
-        setIsLoading(false);
-        return;
+      setApiError("Gagal menghitung BMI. Periksa kembali input Tinggi dan Berat Badan.");
+      setIsLoading(false);
+      return;
     }
-    // --- AKHIR PERHITUNGAN BMI ---
 
-    // URL Backend FastAPI Anda (pastikan port-nya benar, default uvicorn 8000)
+    // URL Backend FastAPI
     const API_URL = "http://localhost:8000/predict";
 
-    // Konversi nilai form dari string ke angka
+    // Data yang akan dikirim ke API
     const formData = {
-        pregnancies: parseInt(form.pregnancies),
-        glucose: parseFloat(form.glucose),
-        bloodPressure: parseFloat(form.bloodPressure),
-        bmi: parseFloat(calculatedBmi.toFixed(2)), // Menggunakan BMI yang dihitung
-        age: parseInt(form.age)
+      pregnancies: parseInt(form.pregnancies),
+      glucose: parseFloat(form.glucose),
+      bloodPressure: parseFloat(form.bloodPressure),
+      bmi: parseFloat(calculatedBmi.toFixed(2)),
+      age: parseInt(form.age),
     };
 
     try {
@@ -85,29 +81,45 @@ function PredictionForm() {
       });
 
       if (!response.ok) {
-        // Tangani jika respons server tidak OK (misal: error 500)
-        const errorData = await response.json().catch(() => ({})); // Coba parse error
-        throw new Error(`Gagal menghubungi server: ${response.statusText} (Status: ${response.status}) - ${errorData.detail || 'No details'}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Gagal menghubungi server: ${response.statusText} (Status: ${response.status}) - ${
+            errorData.detail || "No details"
+          }`
+        );
       }
 
       const data = await response.json();
 
       if (data.error) {
-        // Tangani jika API mengembalikan pesan error (misal: model tidak terload)
         throw new Error(data.error);
       }
 
-      // Set state dengan hasil prediksi dari backend
-      setResult(data.prediction); // "Diabetes" atau "Tidak Diabetes"
-      // Konversi confidence (misal: 0.95) menjadi persentase (95.00)
-      setConfidence((data.confidence * 100).toFixed(2));
+      // Siapkan data untuk Result page
+      const prediction = data.prediction;
+      const conf = (data.confidence * 100).toFixed(2);
 
+      const formDataToSend = {
+        pregnancies: parseInt(form.pregnancies),
+        glucose: parseFloat(form.glucose),
+        bloodPressure: parseFloat(form.bloodPressure),
+        bmi: parseFloat(calculatedBmi.toFixed(2)),
+        age: parseInt(form.age),
+        weight: parseFloat(form.weight),
+        height: parseFloat(form.height),
+      };
+
+      // Navigate ke halaman Result dengan data
+      navigate("/result", {
+        state: {
+          result: prediction,
+          confidence: conf,
+          formData: formDataToSend,
+        },
+      });
     } catch (error) {
-      // Tangani error jaringan atau error dari throw di atas
       console.error("Terjadi kesalahan saat prediksi:", error);
       setApiError(error.message);
-    } finally {
-      // Pastikan loading dimatikan apapun yang terjadi
       setIsLoading(false);
     }
   };
@@ -118,12 +130,10 @@ function PredictionForm() {
       pregnancies: "",
       glucose: "",
       bloodPressure: "",
-      weight: "", // Diubah dari bmi
-      height: "", // Input baru
+      weight: "",
+      height: "",
       age: "",
     });
-    setResult(null);
-    setConfidence(null);
     setApiError(null);
     setIsLoading(false);
   };
@@ -155,21 +165,21 @@ function PredictionForm() {
       tooltip: "Tekanan darah diastolik (mm Hg)",
     },
     {
-      name: "weight", // BARU: Menggantikan BMI
-      label: "Body weight (kg)",
+      name: "weight",
+      label: "Body Weight (kg)",
       placeholder: "Contoh: 70",
       type: "number",
       step: "0.1",
-      icon: Scale, // Icon baru (pastikan diimpor)
+      icon: Scale,
       tooltip: "Berat badan Anda dalam kilogram (kg)",
     },
     {
-      name: "height", // BARU: Input kedua
+      name: "height",
       label: "Body Height (cm)",
       placeholder: "Contoh: 165",
       type: "number",
       step: "1",
-      icon: Ruler, // Icon baru (pastikan diimpor)
+      icon: Ruler,
       tooltip: "Tinggi badan Anda dalam sentimeter (cm)",
     },
     {
@@ -271,96 +281,11 @@ function PredictionForm() {
                 </button>
               </div>
             </div>
-            
+
             {/* Tampilkan pesan Error API jika ada */}
             {apiError && (
               <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-center">
                 <strong>Gagal Prediksi:</strong> {apiError}
-              </div>
-            )}
-
-            {/* Hasil Prediksi */}
-            {result && (
-              <div className="mt-8 p-8 bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border-2 border-blue-100 animate-fadeIn">
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                    ✓ Prediksi Selesai
-                  </div>
-
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Hasil Prediksi:</h3>
-
-                  {/* Result Badge */}
-                  <div
-                    className={`inline-block px-8 py-4 rounded-2xl mb-4 ${
-                      result === "Diabetes"
-                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white"
-                        : "bg-gradient-to-r from-green-500 to-green-600 text-white"
-                    }`}
-                  >
-                    <p className="text-3xl font-bold">{result}</p>
-                  </div>
-
-                  {/* Confidence Score */}
-                  <div className="mt-6 space-y-3">
-                    <p className="text-gray-700 font-medium">Tingkat Keyakinan Model:</p>
-                    <div className="flex items-center justify-center gap-4">
-                      <div className="flex-1 max-w-md bg-gray-200 rounded-full h-4 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-1000 ${
-                            result === "Diabetes" ? "bg-red-500" : "bg-green-500"
-                          }`}
-                          style={{ width: `${confidence}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-2xl font-bold text-gray-800 min-w-[80px]">{confidence}%</span>
-                    </div>
-                  </div>
-
-                  {/* Rekomendasi */}
-                  <div className="mt-8 p-6 bg-white rounded-xl border border-gray-200 text-left">
-                    <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                      <span className="text-xl">💡</span>
-                      Rekomendasi:
-                    </h4>
-                    {result === "Diabetes" ? (
-                      <ul className="space-y-2 text-gray-600">
-                        <li className="flex items-start gap-2">
-                          <span className="text-red-500 font-bold">•</span>
-                          <span>Segera konsultasikan hasil ini dengan dokter</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-red-500 font-bold">•</span>
-                          <span>Lakukan pemeriksaan medis lebih lanjut</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-red-500 font-bold">•</span>
-                          <span>Mulai perhatikan pola makan dan olahraga teratur</span>
-                        </li>
-                      </ul>
-                    ) : (
-                      <ul className="space-y-2 text-gray-600">
-                        <li className="flex items-start gap-2">
-                          <span className="text-green-500 font-bold">•</span>
-                          <span>Pertahankan gaya hidup sehat Anda</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-green-500 font-bold">•</span>
-                          <span>Lakukan pemeriksaan rutin secara berkala</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-green-500 font-bold">•</span>
-                          <span>Tetap jaga pola makan dan aktivitas fisik</span>
-                        </li>
-                      </ul>
-                    )}
-                  </div>
-
-                  {/* Disclaimer */}
-                  <p className="mt-6 text-sm text-gray-500 italic">
-                    ⚠️ Catatan: Hasil ini hanya prediksi dan bukan diagnosis medis. Selalu konsultasikan dengan
-                    profesional kesehatan.
-                  </p>
-                </div>
               </div>
             )}
           </div>

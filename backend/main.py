@@ -26,8 +26,8 @@ app.add_middleware(
 # --- Memuat Model & Scaler ---
 # Path ini diambil dari kode Anda.
 # Pastikan server Anda dijalankan dari direktori yang benar agar path ini ditemukan.
-MODEL_PATH = "ml_training/backend/models/diabetes_model_5_fitur.joblib"
-SCALER_PATH = "ml_training/backend/models/diabetes_scaler_5_fitur.joblib"
+MODEL_PATH = "./models/diabetes_model_5_fitur.joblib"
+SCALER_PATH = "./models/diabetes_scaler_5_fitur.joblib"
 
 model = None
 scaler = None

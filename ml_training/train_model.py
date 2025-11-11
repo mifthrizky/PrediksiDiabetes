@@ -72,7 +72,7 @@ print(f"Model 5 Fitur selesai dilatih.")
 print(f"Akurasi model pada data test (5 fitur): {score * 100:.2f}%")
 
 # Simpan Model DAN Scaler ke folder backend
-model_dir = 'backend/models'
+model_dir = '../backend/models'
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
