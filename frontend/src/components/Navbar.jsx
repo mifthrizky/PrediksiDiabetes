@@ -81,6 +81,12 @@ function Navbar() {
             >
               Mulai Prediksi
             </Link>
+            <Link
+              to="/login"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+            >
+              Login
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}

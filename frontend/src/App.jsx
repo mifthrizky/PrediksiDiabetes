@@ -5,6 +5,9 @@ import Navbar from "./components/Navbar.jsx";
 import Dashboard from "./Dashboard.jsx";
 import PredictionForm from "./components/PredictionForm.jsx";
 import Result from "./components/Result.jsx";
+import Login from "./components/auth/Login.jsx";
+import Signup from "./components/auth/Signup.jsx";
+
 
 function App() {
   return (
@@ -15,6 +18,8 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/prediction" element={<PredictionForm />} />
           <Route path="/result" element={<Result />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/Signup" element={<Signup />} />
         </Routes>
       </main>
     </div>
