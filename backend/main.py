@@ -20,6 +20,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:8080",
     # Anda mungkin ingin menambahkan domain frontend Anda yang sudah di-deploy di sini
 ]
 
@@ -32,8 +33,8 @@ app.add_middleware(
 )
 
 # --- Memuat Model & Scaler ---
-MODEL_PATH = os.getenv("MODEL_PATH", "./backend/models/diabetes_model_5_fitur.joblib")
-SCALER_PATH = os.getenv("SCALER_PATH", "./backend/models/diabetes_scaler_5_fitur.joblib")
+MODEL_PATH = os.getenv("MODEL_PATH", "./models/diabetes_model_5_fitur.joblib")
+SCALER_PATH = os.getenv("SCALER_PATH", "./models/diabetes_scaler_5_fitur.joblib")
 
 model = None
 scaler = None

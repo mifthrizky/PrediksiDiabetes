@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Service untuk Backend
   backend:
@@ -17,6 +15,12 @@ services:
       context: ./frontend # Path ke folder frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:80"          # Mapping port: [Port di komputermu]:[Port di container]
+      - "8080:5173"          # Mapping port: [Port di komputermu]:[Port di container]
+    volumes:
+      # Ini WAJIB untuk hot-reloading (sinkronisasi kode)
+      - ./frontend:/app
+      # 'Trik' agar node_modules di container tidak tertimpa
+      - /app/node_modules
+    command: npm run dev -- --host --port 5173
     depends_on:
       - backend          # Menunggu backend jalan dulu (opsional)

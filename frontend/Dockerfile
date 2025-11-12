@@ -1,35 +1,23 @@
-# --- TAHAP 1: BUILD ---
-# Ambil base image Node.js untuk proses build
-FROM node:18-alpine AS build
+# Ambil base image Node.js
+FROM node:20-alpine
 
 # Set folder kerja
 WORKDIR /app
 
 # Copy package.json dan install dependencies
+# Ini dipisah agar layer 'node_modules' di-cache
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy sisa file frontend dan jalankan build
+# Copy sisa file source code Anda
+# Ini akan ditimpa oleh 'volume' saat dijalankan
 COPY . .
-RUN npm run build
 
-# --- TAHAP 2: SERVE ---
-# Ambil base image Nginx yang ringan
-FROM nginx:1.25-alpine
+# --- PENTING UNTUK DEV SERVER ---
+# Banyak dev server (seperti Vite) default ke port 5173
+# Ganti port ini jika aplikasi Anda menggunakan port lain (misal 3000)
+EXPOSE 5173
 
-# Copy hasil build dari tahap 'build' ke folder web Nginx
-# (Vite build output ada di folder 'dist')
-# BENAR
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Hapus config default nginx
-# RUN rm /etc/nginx/conf.d/default.conf
-
-# (Opsional tapi disarankan) Copy file konfigurasi Nginx kustom
-# COPY nginx.conf /etc/nginx/conf.d
-
-# Expose port 80
-EXPOSE 80
-
-# Perintah untuk menjalankan Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Perintah untuk menjalankan server dev
+# Flag '--host' penting agar server bisa diakses dari luar container
+CMD ["npm", "run", "dev", "--", "--host"]

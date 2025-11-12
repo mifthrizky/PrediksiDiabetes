@@ -33,17 +33,6 @@ function Result() {
   return (
     <section className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 py-8 px-4">
       <div className="container mx-auto max-w-3xl">
-        {/* Header dengan tombol kembali */}
-        <div className="mb-6">
-          <button
-            onClick={() => navigate("/")}
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Kembali ke Beranda
-          </button>
-        </div>
-
         {/* Card Hasil Prediksi */}
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 animate-fadeIn">
           {/* Header */}
