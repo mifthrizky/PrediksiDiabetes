@@ -3,8 +3,6 @@
 /ml_training/venv/
 __pycache__/
 *.pyc
-.env
-.env.*
 
 # Node.js / Frontend
 /frontend/node_modules/
