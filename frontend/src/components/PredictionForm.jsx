@@ -142,7 +142,7 @@ function PredictionForm() {
   const inputFields = [
     {
       name: "pregnancies",
-      label: "Pregnancies",
+      label: "Jumlah Kehamilan",
       placeholder: "Contoh: 2",
       type: "number",
       icon: User,
@@ -150,7 +150,7 @@ function PredictionForm() {
     },
     {
       name: "glucose",
-      label: "Glucose",
+      label: "Glukosa",
       placeholder: "Contoh: 120",
       type: "number",
       icon: Droplet,
@@ -158,7 +158,7 @@ function PredictionForm() {
     },
     {
       name: "bloodPressure",
-      label: "Blood Pressure",
+      label: "Tekanan Darah",
       placeholder: "Contoh: 80",
       type: "number",
       icon: Heart,
@@ -166,7 +166,7 @@ function PredictionForm() {
     },
     {
       name: "weight",
-      label: "Body Weight (kg)",
+      label: "Berat Badan (kg)",
       placeholder: "Contoh: 70",
       type: "number",
       step: "0.1",
@@ -175,7 +175,7 @@ function PredictionForm() {
     },
     {
       name: "height",
-      label: "Body Height (cm)",
+      label: "Tinggi Badan (cm)",
       placeholder: "Contoh: 165",
       type: "number",
       step: "1",
@@ -184,7 +184,7 @@ function PredictionForm() {
     },
     {
       name: "age",
-      label: "Age (Umur)",
+      label: "Umur",
       placeholder: "Contoh: 45",
       type: "number",
       icon: Calendar,

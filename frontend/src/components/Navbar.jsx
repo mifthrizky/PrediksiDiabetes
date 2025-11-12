@@ -54,7 +54,7 @@ function Navbar() {
                 isScrolled ? "text-gray-700" : "text-gray-700"
               }`}
             >
-              About
+              Tentang
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
             </a>
             <a
@@ -72,7 +72,7 @@ function Navbar() {
                 isScrolled ? "text-gray-700" : "text-gray-700"
               }`}
             >
-              Reviews
+              Ulasan
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
             </a>
             <Link
