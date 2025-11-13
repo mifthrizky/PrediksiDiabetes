@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// 1. Impor Eye dan EyeOff
 import { User, Lock, LogIn, Eye, EyeOff } from "lucide-react";
 
-// (Opsional) Jika Anda membuat AuthContext, impor di sini
-// import { useAuth } from "../context/AuthContext";
+// --- AWAL PENYESUAIAN ---
+// 1. Impor useAuth dari AuthContext (pastikan path-nya benar)
+import { useAuth } from "../../context/AuthContext";
+// --- AKHIR PENYESUAIAN ---
 
 function Login() {
   const navigate = useNavigate();
-  
-  // (Opsional) Ambil fungsi login dari konteks Anda
-  // const { login } = useAuth(); 
+
+  // --- AWAL PENYESUAIAN ---
+  // 2. Ambil fungsi login dari context
+  const { login } = useAuth();
+  // --- AKHIR PENYESUAIAN ---
 
   const [formData, setFormData] = useState({
     username: "",
@@ -18,8 +21,6 @@ function Login() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
-  
-  // 2. Tambahkan state untuk show/hide password
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
@@ -31,10 +32,8 @@ function Login() {
     setApiError(null);
     setIsLoading(true);
 
-    // URL ini sudah benar sesuai docker-compose.yml
     const API_URL = "http://localhost:8000/token";
 
-    // Data form-urlencoded untuk endpoint /token (Sudah Benar)
     const body = new URLSearchParams();
     body.append("username", formData.username);
     body.append("password", formData.password);
@@ -54,17 +53,14 @@ function Login() {
         throw new Error(data.detail || "Terjadi kesalahan saat login.");
       }
 
-      // --- PERUBAHAN DI SINI ---
-      // Kita samakan kuncinya menjadi "token"
-      localStorage.setItem("token", data.access_token);
-      
-      // (Opsional) panggil fungsi login global Anda dari Context
-      // if (typeof login === 'function') {
-      //   await login(data.access_token);
-      // }
-      
-      navigate("/"); // Arahkan ke Dashboard
+      // --- AWAL PENYESUAIAN ---
+      // 3. Panggil fungsi login dari context.
+      // Ini akan menyimpan data user ke state global & local storage
+      // dan Navbar akan langsung update.
+      login({ username: formData.username, token: data.access_token });
+      // --- AKHIR PENYESUAIAN ---
 
+      navigate("/"); // Arahkan ke Dashboard/Home
     } catch (error) {
       console.error("Login failed:", error);
       setApiError(error.message);
@@ -104,7 +100,7 @@ function Login() {
               />
             </div>
 
-            {/* 3. MODIFIKASI BLOK PASSWORD */}
+            {/* Blok Password */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-blue-600" />
@@ -127,11 +123,7 @@ function Login() {
                   className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-12 text-gray-500 hover:text-blue-600"
                   aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>

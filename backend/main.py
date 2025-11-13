@@ -1,34 +1,28 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-# --- PENYESUAIAN 1 ---
-# Impor 'Field' dari Pydantic untuk validasi
 from pydantic import BaseModel, Field
 import joblib
 import numpy as np
 import os
 import pandas as pd
-from dotenv import load_dotenv 
-
-# --- Import tambahan untuk Database, Auth & Keamanan ---
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
+from typing import List
 
 # --- Konfigurasi Aplikasi ---
 load_dotenv()
 app = FastAPI(title="API Prediksi Diabetes ML (5 Fitur) dengan Auth")
-
-# ... (Konfigurasi CORS Anda tetap sama) ...
 origins = [
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:8080",
- 
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -41,8 +35,7 @@ app.add_middleware(
 # --- Memuat Model & Scaler ---
 MODEL_PATH = os.getenv("MODEL_PATH", "./models/diabetes_model_5_fitur.joblib")
 SCALER_PATH = os.getenv("SCALER_PATH", "./models/diabetes_scaler_5_fitur.joblib")
-model = None
-scaler = None
+model, scaler = None, None
 if os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH):
     try:
         model = joblib.load(MODEL_PATH)
@@ -55,31 +48,16 @@ else:
 
 EXPECTED_FEATURE_NAMES = ['Pregnancies', 'Glucose', 'BloodPressure', 'BMI', 'Age']
 
-
-# --- Konfigurasi Keamanan (JWT & Hashing) ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # Endpoint login akan ada di /token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Ambil dari environment variables yang di-set di docker-compose
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY") or "default_secret_key_please_change"
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
-
-if not SECRET_KEY:
-    print("FATAL ERROR: SECRET_KEY environment variable not set.")
-    # Sebaiknya hentikan aplikasi di sini, tapi untuk demo kita lanjut
-    SECRET_KEY = "default_secret_key_please_change" # Fallback (tidak aman)
-
-
-# --- Konfigurasi Database ---
 DATABASE_URL = os.getenv("DATABASE_URL")
-engine = None
-SessionLocal = None
+engine, SessionLocal = None, None
 
-# Gunakan Base baru dari SQLAlchemy
-class Base(DeclarativeBase):
-    pass
-
+class Base(DeclarativeBase): pass
 if DATABASE_URL:
     try:
         engine = create_engine(DATABASE_URL)
@@ -90,7 +68,6 @@ if DATABASE_URL:
 else:
     print("PERINGATAN: Variabel DATABASE_URL tidak ditemukan.")
 
-# Dependency untuk mendapatkan sesi DB
 def get_db():
     db = SessionLocal()
     try:
@@ -98,8 +75,7 @@ def get_db():
     finally:
         db.close()
 
-# --- Model Database (Tabel) ---
-
+# --- Model Database ---
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -109,7 +85,7 @@ class User(Base):
 class PredictionLog(Base):
     __tablename__ = "prediction_logs"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id")) # Relasi ke user
+    user_id = Column(Integer, ForeignKey("users.id"))
     pregnancies = Column(Integer)
     glucose = Column(Float)
     bloodPressure = Column(Float)
@@ -119,7 +95,6 @@ class PredictionLog(Base):
     confidence = Column(Float)
     timestamp = Column(String(100), default=lambda: datetime.now(timezone.utc).isoformat())
 
-# Buat semua tabel
 if engine:
     try:
         Base.metadata.create_all(bind=engine)
@@ -127,10 +102,7 @@ if engine:
     except Exception as e:
         print(f"ERROR: Gagal membuat tabel. Kesalahan: {e}")
 
-
-# --- Model Data Pydantic (Validasi Input/Output) ---
-
-# Untuk input prediksi
+# --- Model Data Pydantic ---
 class DiabetesFeatures(BaseModel):
     pregnancies: int
     glucose: float
@@ -138,20 +110,16 @@ class DiabetesFeatures(BaseModel):
     bmi: float
     age: int
 
-# --- PENYESUAIAN 2 ---
-# Tambahkan validasi min_length dan max_length pada password
 class UserCreate(BaseModel):
     username: str
-    password: str = Field(..., min_length=6, max_bytes=72) # <-- max_length=72
+    password: str = Field(..., min_length=6, max_bytes=72)
 
-# Untuk data user (aman dikirim ke frontend)
 class UserInDB(BaseModel):
     id: int
     username: str
     class Config:
-        from_attributes = True # Dulu: orm_mode = True
+        from_attributes = True
 
-# Untuk data token
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -159,8 +127,19 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
+class PredictionLogResponse(BaseModel):
+    id: int
+    pregnancies: int
+    glucose: float
+    bloodPressure: float
+    bmi: float
+    age: int
+    prediction_name: str
+    confidence: float
+    timestamp: str
 
-# --- Fungsi Helper Keamanan & Auth ---
+    class Config:
+        orm_mode = True
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -195,13 +174,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    
     user = get_user(db, username=token_data.username)
     if user is None:
         raise credentials_exception
-    return UserInDB.model_validate(user) # Konversi model SQLAlchemy ke Pydantic
-
-# --- API Endpoints ---
+    return UserInDB.model_validate(user)
 
 @app.get("/")
 def read_root():
@@ -213,39 +189,25 @@ def read_root():
         "database_connected": db_connected_status
     }
 
-# --- ENDPOINT BARU: Registrasi (Signup) ---
 @app.post("/register", response_model=UserInDB)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    # Validasi Pydantic (UserCreate) akan otomatis dijalankan di sini
-    # Jika password > 72 karakter, akan otomatis return error 422
-    
     db_user = get_user(db, username=user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    
     hashed_password = get_password_hash(user.password)
     db_user = User(username=user.username, hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return UserInDB.model_validate(db_user) # Konversi model SQLAlchemy ke Pydantic
+    return UserInDB.model_validate(db_user)
 
-# --- ENDPOINT BARU: Login (Membuat Token) ---
 @app.post("/token", response_model=Token)
-async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(), 
-    db: Session = Depends(get_db)
-):
-    # --- PENYESUAIAN 3 ---
-    # Cek panjang password (dalam bytes) sebelum memverifikasi
-    # untuk menghindari error bcrypt
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     if len(form_data.password.encode('utf-8')) > 72:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Password is too long.",
         )
-    # --- AKHIR PENYESUAIAN 3 ---
-
     user = get_user(db, username=form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -259,23 +221,17 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-# --- ENDPOINT DIPROTEKSI: Prediksi ---
 @app.post("/predict")
 async def predict_diabetes(
     features: DiabetesFeatures,
     db: Session = Depends(get_db),
-    current_user: UserInDB = Depends(get_current_user) # <-- INI PROTEKSINYA
+    current_user: UserInDB = Depends(get_current_user)
 ):
-    """
-    Endpoint untuk memprediksi diabetes (membutuhkan login).
-    """
     if model is None or scaler is None:
         raise HTTPException(
-            status_code=503, 
+            status_code=503,
             detail="Model atau Scaler belum dimuat. Cek log server backend."
         )
-
     try:
         data_array = np.array([[
             features.pregnancies,
@@ -288,15 +244,13 @@ async def predict_diabetes(
         data_scaled = scaler.transform(data_df)
         prediction = model.predict(data_scaled)
         prediction_proba = model.predict_proba(data_scaled)
-
         prediction_value = int(prediction[0])
-        confidence = float(np.max(prediction_proba[0])) 
+        confidence = float(np.max(prediction_proba[0]))
         prediction_name = "Diabetes" if prediction_value == 1 else "Tidak Diabetes"
-
         # Simpan log ke database
         try:
             db_log = PredictionLog(
-                user_id=current_user.id, # <-- Simpan ID user yang login
+                user_id=current_user.id,
                 pregnancies=features.pregnancies,
                 glucose=features.glucose,
                 bloodPressure=features.bloodPressure,
@@ -309,21 +263,46 @@ async def predict_diabetes(
             db.commit()
         except Exception as e:
             print(f"Gagal menyimpan log ke DB: {e}")
-            db.rollback() 
-
+            db.rollback()
         return {
             "prediction": prediction_name,
             "prediction_value": prediction_value,
             "confidence": confidence,
-            "user": current_user.username # Memberi tahu siapa yang request
+            "user": current_user.username
         }
-
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=f"Kesalahan input data: {str(ve)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Terjadi kesalahan saat prediksi: {str(e)}")
 
-# --- Menjalankan Server ---
+# --- ENDPOINT RIWAYAT LOG USER ---
+@app.get("/users/me/prediction-logs", response_model=List[PredictionLogResponse])
+async def get_my_prediction_logs(
+    current_user: UserInDB = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    logs = db.query(PredictionLog)\
+        .filter(PredictionLog.user_id == current_user.id)\
+        .order_by(PredictionLog.timestamp.desc()).all()
+    return logs
+
+@app.delete("/users/me/prediction-logs/{log_id}", status_code=204)
+async def delete_my_prediction_log(
+    log_id: int = Path(..., ge=1),
+    current_user: UserInDB = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    log = db.query(PredictionLog).filter(
+        PredictionLog.id == log_id,
+        PredictionLog.user_id == current_user.id
+    ).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Log tidak ditemukan")
+    db.delete(log)
+    db.commit()
+    return
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

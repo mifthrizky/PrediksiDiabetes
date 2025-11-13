@@ -11,9 +11,9 @@ function Signup() {
     password: "",
     confirmPassword: "",
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
@@ -21,7 +21,7 @@ function Signup() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setApiError(null); 
+    setApiError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -63,14 +63,11 @@ function Signup() {
         throw new Error(data.detail || "Terjadi kesalahan saat registrasi.");
       }
 
-      setSuccessMessage(
-        "Akun berhasil dibuat! Anda akan diarahkan ke halaman Login."
-      );
-      
+      setSuccessMessage("Akun berhasil dibuat! Anda akan diarahkan ke halaman Login.");
+
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-
     } catch (error) {
       console.error("Signup failed:", error);
       setApiError(error.message);
@@ -93,7 +90,6 @@ function Signup() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            
             {/* --- FIELD NAMA LENGKAP DIHAPUS --- */}
 
             {/* Input Username */}
@@ -112,7 +108,7 @@ function Signup() {
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-800 bg-gray-50"
               />
             </div>
-            
+
             {/* Input Password */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -121,7 +117,7 @@ function Signup() {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"} 
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -130,16 +126,12 @@ function Signup() {
                   className="w-full p-4 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-800 bg-gray-50"
                 />
                 <button
-                  type="button" 
+                  type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-12 text-gray-500 hover:text-blue-600"
                   aria-label="Tampilkan password"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -152,7 +144,7 @@ function Signup() {
               </label>
               <div className="relative">
                 <input
-                  type={showConfirmPassword ? "text" : "password"} 
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
@@ -161,16 +153,12 @@ function Signup() {
                   className="w-full p-4 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-800 bg-gray-50"
                 />
                 <button
-                  type="button" 
+                  type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-12 text-gray-500 hover:text-blue-600"
                   aria-label="Tampilkan konfirmasi password"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -210,7 +198,7 @@ function Signup() {
                 <strong>Gagal Mendaftar:</strong> {apiError}
               </div>
             )}
-            
+
             {/* Tampilkan pesan Sukses jika ada */}
             {successMessage && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-center">
