@@ -31,9 +31,10 @@ function Login() {
     setApiError(null);
     setIsLoading(true);
 
+    // URL ini sudah benar sesuai docker-compose.yml
     const API_URL = "http://localhost:8000/token";
 
-    // Data form-urlencoded untuk endpoint /token
+    // Data form-urlencoded untuk endpoint /token (Sudah Benar)
     const body = new URLSearchParams();
     body.append("username", formData.username);
     body.append("password", formData.password);
@@ -55,8 +56,11 @@ function Login() {
 
       // --- LOGIN SUKSES ---
       localStorage.setItem("user_token", data.access_token);
+      
       // (Opsional) panggil fungsi login global Anda dari Context
-      // await login(data.access_token);
+      // if (typeof login === 'function') {
+      //   await login(data.access_token);
+      // }
       
       navigate("/"); // Arahkan ke Dashboard
 

@@ -1,26 +1,67 @@
 services:
-  # Service untuk Backend
+  # ... (Service backend dan frontend Anda tetap sama persis) ...
   backend:
     build:
-      context: ./backend # Path ke folder backend
+      context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000" # Mapping port: [Port di komputermu]:[Port di container]
+      - "8000:8000"
     volumes:
-      - ./backend:/app # Sinkronisasi kode untuk development (opsional)
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://user_diabetes:password_rahasia@db:3306/db_diabetes
+      - SECRET_KEY=GANTI_DENGAN_KUNCI_RAHASIA_ANDA_YANG_KUAT
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      - db
 
-  # Service untuk Frontend
   frontend:
     build:
-      context: ./frontend # Path ke folder frontend
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:5173" # Mapping port: [Port di komputermu]:[Port di container]
+      - "8080:5173"
     volumes:
-      # Ini WAJIB untuk hot-reloading (sinkronisasi kode)
       - ./frontend:/app
-      # 'Trik' agar node_modules di container tidak tertimpa
       - /app/node_modules
     command: npm run dev -- --host --port 5173
     depends_on:
-      - backend # Menunggu backend jalan dulu (opsional)
+      - backend
+
+  # --- SERVICE DATABASE (MARIADB) ---
+  db:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      # Ini adalah password root yang akan kita gunakan
+      MYSQL_ROOT_PASSWORD: password_root_rahasia 
+      MYSQL_DATABASE: db_diabetes
+      MYSQL_USER: user_diabetes
+      MYSQL_PASSWORD: password_rahasia
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # --- SERVICE PHPMYADMIN (DISESUAIKAN) ---
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      
+      # --- TAMBAHKAN DUA BARIS INI UNTUK LOGIN OTOMATIS ---
+      # Menggunakan kredensial ROOT agar otomatis login
+      PMA_USER: root 
+      PMA_PASSWORD: password_root_rahasia # Samakan dengan MYSQL_ROOT_PASSWORD di service 'db'
+      
+    depends_on:
+      - db 
+
+# Volume bernama untuk persistensi data database
+volumes:
+  db_data:

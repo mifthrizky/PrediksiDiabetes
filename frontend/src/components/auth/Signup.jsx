@@ -1,21 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// 1. IMPORT DIPERBAIKI (UserPlus & Mail ditambahkan)
-import { User, Lock, UserPlus, Mail, Eye, EyeOff } from "lucide-react";
+// Impor ikon yang relevan
+import { User, Lock, UserPlus, Eye, EyeOff } from "lucide-react";
 
 function Signup() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: "",
-    full_name: "", 
     password: "",
     confirmPassword: "",
   });
   
-  // 2. TAMBAHKAN STATE KEDUA UNTUK SHOW/HIDE
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // <-- INI BARU
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
@@ -51,9 +49,10 @@ function Signup() {
         headers: {
           "Content-Type": "application/json",
         },
+        // --- DISESUAIKAN ---
+        // Hanya kirim username dan password, sesuai backend/main.py
         body: JSON.stringify({
           username: formData.username,
-          full_name: formData.full_name,
           password: formData.password,
         }),
       });
@@ -87,34 +86,20 @@ function Signup() {
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
             <h2 className="text-2xl font-bold text-white text-center flex items-center justify-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                <UserPlus className="w-6 h-6" /> {/* <-- Sekarang ini akan tampil */}
+                <UserPlus className="w-6 h-6" />
               </div>
               Buat Akun Baru
             </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            {/* Input Nama Lengkap */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-600" />
-                Nama Lengkap
-              </label>
-              <input
-                type="text"
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleChange}
-                placeholder="Contoh: Budi Santoso"
-                required
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-800 bg-gray-50"
-              />
-            </div>
+            
+            {/* --- FIELD NAMA LENGKAP DIHAPUS --- */}
 
             {/* Input Username */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-blue-600" /> {/* <-- Ikon Mail */}
+                <User className="w-4 h-4 text-blue-600" />
                 Username
               </label>
               <input
@@ -128,7 +113,7 @@ function Signup() {
               />
             </div>
             
-            {/* Input Password (Sudah Benar) */}
+            {/* Input Password */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-blue-600" />
@@ -159,30 +144,29 @@ function Signup() {
               </div>
             </div>
 
-            {/* 3. PERBAIKI INPUT KONFIRMASI PASSWORD */}
+            {/* Input Konfirmasi Password */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-blue-600" />
                 Konfirmasi Password
               </label>
-              <div className="relative"> {/* <-- Tambahkan wrapper relative */}
+              <div className="relative">
                 <input
-                  type={showConfirmPassword ? "text" : "password"} // <-- Gunakan state baru
+                  type={showConfirmPassword ? "text" : "password"} 
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Ulangi password Anda"
                   required
-                  className="w-full p-4 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-800 bg-gray-50" // <-- Tambah pr-12
+                  className="w-full p-4 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-gray-800 bg-gray-50"
                 />
-                {/* <-- Tambahkan tombol ikon */}
                 <button
                   type="button" 
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)} // <-- Gunakan setter baru
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-12 text-gray-500 hover:text-blue-600"
                   aria-label="Tampilkan konfirmasi password"
                 >
-                  {showConfirmPassword ? ( // <-- Gunakan state baru
+                  {showConfirmPassword ? (
                     <EyeOff className="w-5 h-5" />
                   ) : (
                     <Eye className="w-5 h-5" />
@@ -194,7 +178,7 @@ function Signup() {
             {/* Tombol Submit */}
             <button
               type="submit"
-              disabled={isLoading || successMessage}
+              disabled={isLoading || !!successMessage} // disable jika sedang loading ATAU sudah sukses
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
