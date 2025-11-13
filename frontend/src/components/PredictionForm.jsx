@@ -1,10 +1,19 @@
+// File: frontend/src/components/PredictionForm.jsx
+// (VERSI LENGKAP DAN SUDAH DIPERBAIKI)
+
 import { useState } from "react";
 import { Activity, Droplet, Heart, User, Calculator, Calendar, Scale, Ruler } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// 1. Impor hook useAuth yang ASLI
+import { useAuth } from "../context/AuthContext"; // Pastikan path ini benar
+
 // Komponen utama form prediksi
 function PredictionForm() {
   const navigate = useNavigate();
+
+  // 2. Gunakan hook dari context
+  const { token, logout } = useAuth();
 
   // State untuk menyimpan data form
   const [form, setForm] = useState({
@@ -30,6 +39,13 @@ function PredictionForm() {
     e.preventDefault();
     setApiError(null);
 
+    // 3. Cek token dari context (bukan localStorage)
+    if (!token) {
+      setApiError("Anda harus login untuk melakukan prediksi. Mengarahkan ke halaman login...");
+      setTimeout(() => navigate("/login"), 2500);
+      return;
+    }
+
     // Validasi form
     const isFormIncomplete = Object.values(form).some((value) => value === "");
     if (isFormIncomplete) {
@@ -39,7 +55,7 @@ function PredictionForm() {
 
     setIsLoading(true);
 
-    // Perhitungan BMI
+    // Perhitungan BMI (Lengkap)
     const weightKg = parseFloat(form.weight);
     const heightCm = parseFloat(form.height);
     let calculatedBmi;
@@ -76,11 +92,23 @@ function PredictionForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // 4. Token dari context digunakan di sini
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
+      // 5. Penanganan Error 401 (Unauthorized) menggunakan context
       if (!response.ok) {
+        if (response.status === 401) {
+          setApiError("Sesi Anda telah berakhir. Silakan login kembali.");
+          logout(); // Panggil logout dari context
+          navigate("/login"); // Langsung arahkan
+
+          setIsLoading(false);
+          return;
+        }
+
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           `Gagal menghubungi server: ${response.statusText} (Status: ${response.status}) - ${
@@ -95,7 +123,7 @@ function PredictionForm() {
         throw new Error(data.error);
       }
 
-      // Siapkan data untuk Result page
+      // Siapkan data untuk Result page (Lengkap)
       const prediction = data.prediction;
       const conf = (data.confidence * 100).toFixed(2);
 
@@ -109,7 +137,7 @@ function PredictionForm() {
         height: parseFloat(form.height),
       };
 
-      // Navigate ke halaman Result dengan data
+      // Navigate ke halaman Result dengan data (Lengkap)
       navigate("/result", {
         state: {
           result: prediction,
@@ -124,7 +152,7 @@ function PredictionForm() {
     }
   };
 
-  // Menangani reset form
+  // Menangani reset form (Lengkap)
   const handleReset = () => {
     setForm({
       pregnancies: "",
@@ -138,7 +166,7 @@ function PredictionForm() {
     setIsLoading(false);
   };
 
-  // Konfigurasi untuk input fields
+  // Konfigurasi untuk input fields (Lengkap)
   const inputFields = [
     {
       name: "pregnancies",
@@ -192,6 +220,7 @@ function PredictionForm() {
     },
   ];
 
+  // Return JSX (Lengkap)
   return (
     <section
       id="form-prediksi"

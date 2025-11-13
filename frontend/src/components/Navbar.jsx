@@ -1,28 +1,39 @@
+// File: frontend/src/components/Navbar.jsx
+// (MODIFIKASI file Anda)
+
 import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { Link } from "react-router-dom";
+// 1. Impor User dan LogOut
+import { Menu, X, User, LogOut } from "lucide-react";
+// 2. Impor Link dan useNavigate
+import { Link, useNavigate } from "react-router-dom";
+// 3. Impor hook useAuth yang ASLI
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // 4. Gunakan hook dari context
+  const { isLoggedIn, logout } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToTop = (e) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleNavClick = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const handleNavClick = () => {
-    setIsMobileMenuOpen(false);
+  // 5. Buat fungsi handleLogout
+  const handleLogout = () => {
+    logout(); // Panggil fungsi logout dari context
+    navigate("/login"); // Arahkan ke halaman login
+    setIsMobileMenuOpen(false); // Tutup menu mobile jika terbuka
   };
 
   return (
@@ -33,7 +44,7 @@ function Navbar() {
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
+          {/* Logo (tetap sama) */}
           <Link
             to="/"
             className={`text-2xl font-bold flex items-center gap-2 transition-colors ${
@@ -48,48 +59,40 @@ function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <a
-              href="#about"
-              className={`font-medium transition-all hover:text-blue-600 relative group ${
-                isScrolled ? "text-gray-700" : "text-gray-700"
-              }`}
-            >
-              Tentang
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <a
-              href="#blog"
-              className={`font-medium transition-all hover:text-blue-600 relative group ${
-                isScrolled ? "text-gray-700" : "text-gray-700"
-              }`}
-            >
-              Blog
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <a
-              href="#reviews"
-              className={`font-medium transition-all hover:text-blue-600 relative group ${
-                isScrolled ? "text-gray-700" : "text-gray-700"
-              }`}
-            >
-              Ulasan
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <Link
-              to="/prediction"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
-            >
-              Mulai Prediksi
-            </Link>
-            <Link
-              to="/login"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
-            >
-              Login
-            </Link>
+            <a href="#about" /* ... */>Tentang</a>
+            <a href="#blog" /* ... */>Blog</a>
+            <a href="#reviews" /* ... */>Ulasan</a>
+            <Link to="/prediction" /* ... */>Mulai Prediksi</Link>
+
+            {/* 6. LOGIKA KONDISIONAL UNTUK LOGIN/PROFIL */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                <Link
+                  to="/profile" // Arahkan ke halaman profil (buat jika perlu)
+                  className="p-2.5 rounded-full text-gray-700 hover:bg-gray-100 transition-all duration-300"
+                  title="Profile"
+                >
+                  <User className="w-6 h-6" />
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2.5 rounded-full text-gray-700 hover:bg-red-100 hover:text-red-600 transition-all duration-300"
+                  title="Logout"
+                >
+                  <LogOut className="w-6 h-6" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+              >
+                Login
+              </Link>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button (tetap sama) */}
           <button
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -105,34 +108,38 @@ function Navbar() {
           }`}
         >
           <div className="bg-white rounded-xl shadow-xl p-6 space-y-4 border border-gray-100">
-            <a
-              href="#about"
-              className="block font-medium text-gray-700 hover:text-blue-600 py-2 transition-colors"
-              onClick={handleNavClick}
-            >
+            <a href="#about" /* ... */ onClick={handleNavClick}>
               About
             </a>
-            <a
-              href="#blog"
-              className="block font-medium text-gray-700 hover:text-blue-600 py-2 transition-colors"
-              onClick={handleNavClick}
-            >
+            <a href="#blog" /* ... */ onClick={handleNavClick}>
               Blog
             </a>
-            <a
-              href="#reviews"
-              className="block font-medium text-gray-700 hover:text-blue-600 py-2 transition-colors"
-              onClick={handleNavClick}
-            >
+            <a href="#reviews" /* ... */ onClick={handleNavClick}>
               Reviews
             </a>
-            <a
-              href="#form-prediksi"
-              className="block bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold text-center hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md"
-              onClick={handleNavClick}
-            >
+            <a href="#form-prediksi" /* ... */ onClick={handleNavClick}>
               Mulai Prediksi
             </a>
+
+            {/* 7. LOGIKA KONDISIONAL UNTUK MOBILE MENU */}
+            <div className="border-t pt-4 space-y-4">
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left font-medium text-red-600 hover:bg-red-50 py-2 px-3 rounded-lg transition-colors"
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={handleNavClick}
+                  className="block bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-200 transition-all"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>

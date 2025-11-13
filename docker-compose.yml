@@ -1,26 +1,76 @@
 services:
-  # Service untuk Backend
   backend:
     build:
-      context: ./backend # Path ke folder backend
+      context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000" # Mapping port: [Port di komputermu]:[Port di container]
+      - "8000:8000"
     volumes:
-      - ./backend:/app # Sinkronisasi kode untuk development (opsional)
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://user_diabetes:password_rahasia@db:3306/db_diabetes
+      - SECRET_KEY=GANTI_DENGAN_KUNCI_RAHASIA_ANDA_YANG_KUAT
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    
+    # --- PERUBAHAN DI SINI ---
+    # Tambahkan 'restart' untuk jaga-jaga
+    restart: always 
+    depends_on:
+      # Ubah ini dari string sederhana menjadi objek
+      db:
+        # Perintahkan untuk menunggu sampai 'db' statusnya "healthy"
+        condition: service_healthy 
+    # --- AKHIR PERUBAHAN ---
 
-  # Service untuk Frontend
   frontend:
     build:
-      context: ./frontend # Path ke folder frontend
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:5173" # Mapping port: [Port di komputermu]:[Port di container]
+      - "8080:5173"
     volumes:
-      # Ini WAJIB untuk hot-reloading (sinkronisasi kode)
       - ./frontend:/app
-      # 'Trik' agar node_modules di container tidak tertimpa
       - /app/node_modules
     command: npm run dev -- --host --port 5173
     depends_on:
-      - backend # Menunggu backend jalan dulu (opsional)
+      - backend
+
+  db:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password_root_rahasia
+      MYSQL_DATABASE: db_diabetes
+      MYSQL_USER: user_diabetes
+      MYSQL_PASSWORD: password_rahasia
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      
+    # --- TAMBAHKAN INI ---
+    # Perintah untuk mengecek apakah database sudah siap
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s # Cek setiap 10 detik
+      timeout: 5s   # Gagal jika > 5 detik
+      retries: 5    # Coba 5 kali
+    # --- AKHIR TAMBAHAN ---
+
+  phpmyadmin:
+    # ... (service phpmyadmin Anda tetap sama)
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: password_root_rahasia
+    depends_on:
+      - db
+
+volumes:
+  db_data:

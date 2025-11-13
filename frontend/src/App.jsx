@@ -7,7 +7,7 @@ import PredictionForm from "./components/PredictionForm.jsx";
 import Result from "./components/Result.jsx";
 import Login from "./components/auth/Login.jsx";
 import Signup from "./components/auth/Signup.jsx";
-
+import Profile from "./components/User/Profile.jsx";
 
 function App() {
   return (
@@ -20,6 +20,7 @@ function App() {
           <Route path="/result" element={<Result />} />
           <Route path="/login" element={<Login />} />
           <Route path="/Signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
     </div>
