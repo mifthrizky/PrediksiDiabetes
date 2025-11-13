@@ -54,8 +54,9 @@ function Login() {
         throw new Error(data.detail || "Terjadi kesalahan saat login.");
       }
 
-      // --- LOGIN SUKSES ---
-      localStorage.setItem("user_token", data.access_token);
+      // --- PERUBAHAN DI SINI ---
+      // Kita samakan kuncinya menjadi "token"
+      localStorage.setItem("token", data.access_token);
       
       // (Opsional) panggil fungsi login global Anda dari Context
       // if (typeof login === 'function') {

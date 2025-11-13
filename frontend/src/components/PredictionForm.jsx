@@ -30,6 +30,17 @@ function PredictionForm() {
     e.preventDefault();
     setApiError(null);
 
+    // --- PENYESUAIAN 1: Ambil Token ---
+    // Kita asumsikan token disimpan di localStorage setelah login
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setApiError("Anda harus login untuk melakukan prediksi. Mengarahkan ke halaman login...");
+      setTimeout(() => navigate("/login"), 2500);
+      return;
+    }
+    // --- AKHIR PENYESUAIAN 1 ---
+
     // Validasi form
     const isFormIncomplete = Object.values(form).some((value) => value === "");
     if (isFormIncomplete) {
@@ -76,11 +87,23 @@ function PredictionForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // --- PENYESUAIAN 2: Tambahkan Header Authorization ---
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
+      // --- PENYESUAIAN 3: Penanganan Error 401 (Unauthorized) ---
       if (!response.ok) {
+        if (response.status === 401) {
+          setApiError("Sesi Anda telah berakhir. Silakan login kembali. Mengarahkan...");
+          localStorage.removeItem("token"); // Hapus token lama
+          setTimeout(() => navigate("/login"), 2500);
+          setIsLoading(false);
+          return; // Hentikan eksekusi
+        }
+        // --- AKHIR PENYESUAIAN 3 ---
+
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           `Gagal menghubungi server: ${response.statusText} (Status: ${response.status}) - ${

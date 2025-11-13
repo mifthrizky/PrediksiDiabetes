@@ -26,6 +26,8 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:8080",
  
 ]
 app.add_middleware(
@@ -140,7 +142,7 @@ class DiabetesFeatures(BaseModel):
 # Tambahkan validasi min_length dan max_length pada password
 class UserCreate(BaseModel):
     username: str
-    password: str = Field(..., min_length=6, max_length=9999999) # <-- max_length=72
+    password: str = Field(..., min_length=6, max_bytes=72) # <-- max_length=72
 
 # Untuk data user (aman dikirim ke frontend)
 class UserInDB(BaseModel):
